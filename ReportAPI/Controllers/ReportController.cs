@@ -1,33 +1,51 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using ReportAPI.Interfaces;
+using ReportAPI.Models;
+using ReportAPI.Services;
 
 namespace ReportAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    [Route("api/")]
+    public class ReportController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
+        private readonly ILogger<ReportController> _logger;
+        private readonly IReportService reportService;
+        public ReportController(ILogger<ReportController> logger)
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
-        {
+            reportService = new ReportService();
             _logger = logger;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpGet(Name ="IsAlive")]
+        public bool isAlive()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            return true;
+        }
+
+        [HttpPost(Name = "RequestReport")]
+        public async Task<StatusCodeResult> RequestReport([FromQuery] string startAt, [FromQuery] string endAt, [FromQuery] string user) 
+        {
+            DateTime startDate = DateTime.ParseExact(startAt, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            DateTime endDate = DateTime.ParseExact(endAt, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+            var reportModel = new ReportModel
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                StartAt = startDate,
+                EndAt = endDate,
+                UserGuid = new Guid (user)
+            };
+
+            bool success = await reportService.RequestReport(reportModel);
+            if (success) {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+
         }
     }
 }
