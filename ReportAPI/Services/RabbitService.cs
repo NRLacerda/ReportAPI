@@ -36,13 +36,14 @@ namespace ReportAPI.Services
             {
                 await InstantiateRabbit();
 
-                await channel.QueueDeclareAsync(queue: "reports", durable: false, exclusive: false, autoDelete: false,
-                    arguments: null);
+                await channel.ExchangeDeclareAsync("reports_exchange", ExchangeType.Topic, durable: false, autoDelete: false);
+
+                await channel.QueueBindAsync(queue: queueName, exchange: "reports_exchange", routingKey: "reports.bacen");
 
                 var json = JsonSerializer.Serialize(reportReq);
                 var body = Encoding.UTF8.GetBytes(json);
 
-                await channel.BasicPublishAsync(exchange: string.Empty, routingKey: "hello", body: body);
+                await channel.BasicPublishAsync(exchange: "reports_exchange", routingKey: "reports.bacen", body: body);
 
                 Console.WriteLine($"[x] Sent {reportReq} to queue: {queueName}");
                 await Task.CompletedTask;
