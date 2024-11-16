@@ -38,6 +38,8 @@ namespace ReportAPI.Services
 
                 await channel.ExchangeDeclareAsync("reports_exchange", ExchangeType.Topic, durable: false, autoDelete: false);
 
+                await channel.QueueDeclareAsync(queue: "reports", durable: true, exclusive: false, autoDelete: false);
+
                 await channel.QueueBindAsync(queue: queueName, exchange: "reports_exchange", routingKey: "reports.bacen");
 
                 var json = JsonSerializer.Serialize(reportReq);
