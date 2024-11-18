@@ -9,5 +9,7 @@ namespace ReportAPI.Models
         public DateTime EndAt { get; set; }
 
         public Guid UserGuid { get; set; }
+
+        public string TipoProcedimento {  get; set; } = String.Empty;
     }
 }

@@ -25,19 +25,15 @@ namespace ReportAPI.Controllers
         }
 
         [HttpPost(Name = "RequestReport")]
-        public async Task<StatusCodeResult> RequestReport([FromQuery] string startAt, [FromQuery] string endAt, [FromQuery] string user) 
+        public async Task<StatusCodeResult> RequestReport([FromBody] ReportModel report) 
         {
-            DateTime startDate = DateTime.ParseExact(startAt, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-            DateTime endDate = DateTime.ParseExact(endAt, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-
-            var reportModel = new ReportModel
+            if (report == null)
             {
-                StartAt = startDate,
-                EndAt = endDate,
-                UserGuid = new Guid (user)
-            };
+                return BadRequest();
+            }
 
-            bool success = await reportService.RequestReport(reportModel);
+            bool success = await reportService.RequestReport(report);
+
             if (success) {
                 return Ok();
             }
